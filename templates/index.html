@@ -1,0 +1,68 @@
+<!-- templates/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Bank Statement Parser — Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+<body>
+  <div class="center-card">
+    <h1>Bank Statement Parser</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="messages">
+          {% for category, msg in messages %}
+            <div class="msg {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('process') }}" method="post" enctype="multipart/form-data" class="upload-form">
+      <label for="bank" class="label">Select bank</label>
+      <select name="bank" id="bank" class="input">
+        {% for key, label in banks %}
+          <option value="{{ key }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="pdf_file" class="label">Upload PDF</label>
+      <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" class="input" required />
+
+      <div class="small-row">
+        <label><input type="checkbox" name="no_ocr" /> Skip OCR (text-only PDF)</label>
+      </div>
+
+      <div class="small-row">
+        <label>OCR DPI: <input type="number" name="ocr_dpi" value="350" min="72" max="1200" /></label>
+        <label>Max OCR pages (0 = all): <input type="number" name="max_ocr_pages" value="0" min="0" /></label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn">Parse & Preview</button>
+      </div>
+    </form>
+
+    {% if preview %}
+      <hr/>
+      <h2>Preview (first 10 rows)</h2>
+      <div class="preview-area">
+        {{ preview | safe }}
+      </div>
+
+      <div class="download-actions">
+        <a class="btn" href="{{ url_for('download', file_id=info.excel_id) }}">Download Excel</a>
+        <a class="btn" href="{{ url_for('download', file_id=info.xml_id) }}">Download XML</a>
+      </div>
+
+      <p class="muted">Rows parsed: {{ info.rows_parsed }}</p>
+    {% endif %}
+
+    <footer class="muted small">
+      Parser adapted from your original Kotak parser logic. Add more bank-specific parsers by editing app.py. :contentReference[oaicite:1]{index=1}
+    </footer>
+  </div>
+</body>
+</html>
